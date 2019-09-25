@@ -11,25 +11,29 @@ void* toss(void* tosses);
 void usage(char* prog_name);
 void get_args(int argc, char* argv[]);
 
+
 int main(int argc, char* argv[]) {
     long thread;
     pthread_t* thread_handles;
     long toss_per_thread;
     double pi_estimate;
 
+    /* get args and set rng */
     get_args(argc, argv);
     srand(time(0));
 
+    /* set thread handles and total tosses per thread */
     toss_per_thread = number_throws/thread_count;
-
     thread_handles = (pthread_t*) malloc (thread_count*sizeof(pthread_t));
 
+
+    /* toss and wait for tosses */
     for (thread = 0; thread < thread_count; thread++) 
         pthread_create(&thread_handles[thread], NULL, toss, (void*) toss_per_thread);
-
     for (thread = 0; thread < thread_count; thread++)
         pthread_join(thread_handles[thread], NULL);
 
+    /* finalize monte carlo guess then print it */
     pi_estimate = 4*number_hits/(double) number_throws;
     printf("pi guess: %.4f\n", pi_estimate);
 }
@@ -46,6 +50,7 @@ void* toss(void* tosses) {
     double distance_squared;
 
     for (long i = 0; i < (long) tosses; i++) {
+        /* generate x and y --- note that this is not a balanced random number generator due to the nature of rand()*/
         x = (double) rand() / RAND_MAX;
         x = -1 + x * 2;
 
