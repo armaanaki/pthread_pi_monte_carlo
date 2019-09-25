@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include "timer.h"
 
 long thread_count;
 long long number_throws;
@@ -16,7 +17,7 @@ int main(int argc, char* argv[]) {
     long thread;
     pthread_t* thread_handles;
     long toss_per_thread;
-    double pi_estimate;
+    double pi_estimate, start, finish;
 
     /* get args and set rng */
     get_args(argc, argv);
@@ -27,15 +28,18 @@ int main(int argc, char* argv[]) {
     thread_handles = (pthread_t*) malloc (thread_count*sizeof(pthread_t));
 
 
+    GET_TIME(start);
     /* toss and wait for tosses */
     for (thread = 0; thread < thread_count; thread++) 
         pthread_create(&thread_handles[thread], NULL, toss, (void*) toss_per_thread);
     for (thread = 0; thread < thread_count; thread++)
         pthread_join(thread_handles[thread], NULL);
+    GET_TIME(finish)
 
     /* finalize monte carlo guess then print it */
     pi_estimate = 4*number_hits/(double) number_throws;
     printf("pi guess: %.4f\n", pi_estimate);
+    printf("time = %e seconds\n", finish - start);
     
     free(thread_handles);
 }
