@@ -36,6 +36,8 @@ int main(int argc, char* argv[]) {
     /* finalize monte carlo guess then print it */
     pi_estimate = 4*number_hits/(double) number_throws;
     printf("pi guess: %.4f\n", pi_estimate);
+    
+    free(thread_handles);
 }
 
 /*
