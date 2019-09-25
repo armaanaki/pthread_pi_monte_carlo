@@ -5,12 +5,58 @@
 long thread_count;
 long long number_throws;
 volatile long long number_hits;
+
+void* toss(void* tosses);
+
 void usage(char* prog_name);
 void get_args(int argc, char* argv[]);
 
 int main(int argc, char* argv[]) {
+    long thread;
+    pthread_t* thread_handles;
+    long toss_per_thread;
+    double pi_estimate;
+
     get_args(argc, argv);
-    printf("%d %d\n", thread_count, number_throws);
+    srand(time(0));
+
+    toss_per_thread = number_throws/thread_count;
+
+    thread_handles = (pthread_t*) malloc (thread_count*sizeof(pthread_t));
+
+    for (thread = 0; thread < thread_count; thread++) 
+        pthread_create(&thread_handles[thread], NULL, toss, (void*) toss_per_thread);
+
+    for (thread = 0; thread < thread_count; thread++)
+        pthread_join(thread_handles[thread], NULL);
+
+    pi_estimate = 4*number_hits/(double) number_throws;
+    printf("pi guess: %.4f\n", pi_estimate);
+}
+
+/*
+ * Function: toss
+ * Purpose: have each thread perform it's own toss
+ * In args: tosses
+ * Global out: number_hits
+ */
+void* toss(void* tosses) {
+    double x;
+    double y;
+    double distance_squared;
+
+    for (long i = 0; i < (long) tosses; i++) {
+        x = (double) rand() / RAND_MAX;
+        x = -1 + x * 2;
+
+        y = (double) rand() / RAND_MAX;
+        y = -1 + y * 2;
+
+        distance_squared = x*x + y*y;
+        if (distance_squared <= 1) number_hits++;
+    }
+
+    return NULL;
 }
 
 /*
